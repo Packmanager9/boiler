@@ -942,10 +942,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     class Boiler{
         constructor(){
-            this.shell = new Rectangle(100,100,500,300, "#00FFFF11")
+            this.shell = new Rectangle(100,100,580,360, "#00FFFF11")
             this.particles = []
             for(let t = 0;t<1000;t++){
-                let speck = new Circle(100+(Math.random()*200),100+(Math.random()*200), 2.5, "#00AAFF22", Math.random()-.5, Math.random()-.5, .99)
+                let speck = new Circle(100+(Math.random()*100),300+(Math.random()*160), 2.5, "#00AAFF22", Math.random()-.5, Math.random()-.5, .999)
                 this.particles.push(speck)
             }
             this.source = new Circle(450,450, 3, "#FFAA00")
@@ -989,8 +989,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
                             index = k
                         }
                     }
-                    this.particles[index].xmom += this.sparks[t].xmom*this.sparks[t].radius*4
-                    this.particles[index].ymom += this.sparks[t].ymom*this.sparks[t].radius*4
+                    this.particles[index].xmom += this.sparks[t].xmom*this.sparks[t].radius*5
+                    this.particles[index].ymom += this.sparks[t].ymom*this.sparks[t].radius*5
 
                 }
             }
@@ -1006,28 +1006,59 @@ window.addEventListener('DOMContentLoaded', (event) => {
                     this.sparks.splice(t,1)
                 }
             }
-            this.shell.draw()
+            // this.shell.draw()
             for(let t = 0;t<this.particles.length;t++){
                 this.particles[t].ymom+=.19
 
-                if (this.particles[t].x > this.shell.width+this.shell.x) {
-                    if (this.particles[t].xmom > 0) {
-                        this.particles[t].xmom *= -1
+                if(!keysPressed['l']){
+
+                    if (this.particles[t].x > this.shell.width+this.shell.x) {
+                        if (this.particles[t].xmom > 0) {
+                            this.particles[t].xmom *= -1
+                        }
                     }
-                }
-                if (this.particles[t].y > this.shell.height + this.shell.y) {
-                    if (this.particles[t].ymom > 0) {
-                        this.particles[t].ymom *= -1
+                    if (this.particles[t].y > this.shell.height + this.shell.y) {
+                        if (this.particles[t].ymom > 0) {
+                            this.particles[t].ymom *= -1
+                        }
                     }
-                }
-                if (this.particles[t].x < this.shell.x) {
-                    if (this.particles[t].xmom < 0) {
-                        this.particles[t].xmom *= -1
+                    if (this.particles[t].x < this.shell.x) {
+                        if (this.particles[t].xmom < 0) {
+                            this.particles[t].xmom *= -1
+                        }
                     }
-                }
-                if (this.particles[t].y < this.shell.y) {
-                    if (this.particles[t].ymom < 0) {
-                        this.particles[t].ymom *= -1
+                    if (this.particles[t].y < this.shell.y) {
+                        if (this.particles[t].ymom < 0) {
+                            this.particles[t].ymom *= -1
+                        }
+                    }
+                }else{
+                    if (this.particles[t].x > this.shell.width+this.shell.x) {
+                        if (this.particles[t].y < this.shell.height + this.shell.y){
+                        if (this.particles[t].xmom > 0) {
+                            this.particles[t].xmom *= -1
+                        }
+                    }
+                    }
+                    if (this.particles[t].y > this.shell.height + this.shell.y && this.particles[t].x > 150) {
+
+                        if (this.particles[t].y < this.shell.height + this.shell.y+10){
+                        if (this.particles[t].ymom > 0) {
+                            this.particles[t].ymom *= -1
+                        }
+                    }
+                    }
+                    if (this.particles[t].x < this.shell.x) {
+                        if (this.particles[t].xmom < 0) {
+                            // if (this.particles[t].y < this.shell.height + this.shell.y){
+                            this.particles[t].xmom *= -1
+                            // }
+                        }
+                    }
+                    if (this.particles[t].y < this.shell.y) {
+                        if (this.particles[t].ymom < 0) {
+                            this.particles[t].ymom *= -1
+                        }
                     }
                 }
                 this.particles[t].frictiveMove()
@@ -1078,12 +1109,81 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
+    class Tub{
+        constructor(x,y){
+            this.body = new Circle(x,y, 20, "transparent")
+            this.centroid = new Circle(x,y, 1, "#FF0000")
+            this.xtemp = 0
+            this.ytemp = .0001
+            this.points = []
+            this.angle = 0
+            this.spin = 0
+            for(let t = 0;t<4;t++){
+                let point = new Circle(this.centroid.x+(this.body.radius*Math.cos(this.angle+(Math.PI*(t/2)))),  this.centroid.y+(this.body.radius*Math.sin(this.angle+(Math.PI*(t/2)))), 2, getRandomColor())
+                this.points.push(point)
+            }
+        }
+        draw(){
+            // console.log(this)
+            this.centroid.draw()
+
+            let link = new Line(this.xtemp, this.ytemp, 0,0, "white", 1)
+            let angle = link.angle()
+            let force = link.hypotenuse() 
+            this.spinrat = force/100 * (this.ytemp/(Math.abs(this.ytemp)))
+            this.spin+=this.spinrat
+
+            for(let t = 0;t<boilseten.particles.length;t++){
+                if(this.body.doesPerimeterTouch(boilseten.particles[t])){
+                    let link = new LineOP(boilseten.particles[t], this.centroid)
+                    let dis = link.hypotenuse()
+                    let angle = link.angle()
+                    this.xtemp += (boilseten.particles[t].xmom/100)
+                    this.ytemp += (boilseten.particles[t].ymom/100)
+                    boilseten.particles[t].xmom*=.99
+                    boilseten.particles[t].ymom*=.99
+                    // boilseten.particles[t].y+=.1
+
+                    let xdis = boilseten.particles[t].x - this.centroid.x+(dis*(Math.cos(angle)))
+                    let ydis = boilseten.particles[t].y - this.centroid.y+(dis*(Math.sin(angle)))
+
+                    boilseten.particles[t].x = this.centroid.x+(dis*(Math.cos(angle+(this.spinrat))))
+                    boilseten.particles[t].y = this.centroid.y+(dis*(Math.sin(angle+(this.spinrat))))
+
+                    boilseten.particles[t].xmom =  ((boilseten.particles[t].xmom*99)+xdis)*.01
+                    boilseten.particles[t].ymom =  ((boilseten.particles[t].ymom*99)+ydis)*.01
+
+
+                    // boilseten.particles[t].x+= // account for spin?
+                }
+            }
+            this.xtemp*=.99
+            this.ytemp*=.99
+
+            this.points = []
+            for(let t = 0;t<4;t++){
+                let point = new Circle(this.centroid.x+(this.body.radius*Math.cos(this.angle+this.spin+(Math.PI*(t/2)))),  this.centroid.y+(this.body.radius*Math.sin(this.angle+this.spin+(Math.PI*(t/2)))), 2, getRandomColor())
+                this.points.push(point)
+            }
+            for(let t = 0;t<this.points.length;t++){
+                this.points[t].draw()
+                let link = new LineOP(this.centroid, this.points[t], "#FFFFAA", 2)
+                link.draw()
+            }
+
+        }
+    }
+    let tub1 = new Tub(120,550)
+
     let boilseten = new Boiler()
 
     function main() {
-        canvas_context.clearRect(0, 0, canvas.width, canvas.height)  // refreshes the image
+        // canvas_context.clearRect(0, 0, canvas.width, canvas.height)  // refreshes the image
+        canvas_context.fillStyle = "#00000021"
+        canvas_context.fillRect(0, 0, canvas.width, canvas.height)  // refreshes the image
         gamepadAPI.update() //checks for button presses/stick movement on the connected controller)
         // game code goes here
         boilseten.draw()
+        tub1.draw()
     }
 })
